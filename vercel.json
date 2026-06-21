@@ -4,6 +4,7 @@
   "outputDirectory": "frontend/dist/frontend",
   "functions": {
     "api/**/*.ts": {
+      "includeFiles": "node_modules/sqlite3/**/*",
       "maxDuration": 60
     }
   },

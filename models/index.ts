@@ -26,6 +26,7 @@ import { SecurityQuestionModelInit } from './securityQuestion'
 import { UserModelInit } from './user'
 import { WalletModelInit } from './wallet'
 import { Sequelize, Transaction } from 'sequelize'
+import sqlite3 from 'sqlite3'
 
 let sequelize = createSequelize()
 
@@ -38,6 +39,7 @@ function createSequelize (options?: { inMemory?: boolean }) {
       max: 5
     },
     transactionType: Transaction.TYPES.IMMEDIATE,
+    dialectModule: sqlite3,
     storage: options?.inMemory ? ':memory:' : 'data/juiceshop.sqlite',
     logging: false
   })
