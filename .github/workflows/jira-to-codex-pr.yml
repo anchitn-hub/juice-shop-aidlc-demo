@@ -36,14 +36,14 @@ jobs:
     steps:
       - uses: actions/checkout@v5
         with:
-          ref: develop
+          ref: main
           fetch-depth: 0
 
       - uses: actions/setup-node@v4
         with:
           node-version: 24
 
-      - run: npm ci
+      - run: npm install
 
       - name: Jira to In Progress
         run: node scripts/jira.mjs transition "$ISSUE_KEY" "In Progress" || true
@@ -112,7 +112,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           PR_URL=$(gh pr create \
-            --base develop \
+            --base main \
             --head "codex/${ISSUE_KEY}" \
             --title "${ISSUE_SUMMARY} (${ISSUE_KEY})" \
             --body-file "docs/${ISSUE_KEY}/pr-summary.md")

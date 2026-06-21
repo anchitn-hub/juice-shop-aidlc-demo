@@ -15,10 +15,12 @@ Show an AI-assisted delivery lifecycle where Codex turns a request into a Jira s
 7. `npm run lint` and `npm test` run.
 8. Codex runs pre-PR security review and writes `docs/<JIRA_KEY>/security-pre-pr.md`.
 9. Jenkins demo gate runs. If Jenkins credentials are absent, it writes a simulated evidence artifact.
-10. The workflow opens a PR into `develop`.
-11. `Codex PR Review Pack` posts the reviewer summary and security notes.
-12. A human manually approves and merges.
-13. `Merge And Close Jira` transitions Jira to `Done`.
+10. The workflow opens a PR into `main`.
+11. `Vercel Deployment` creates a preview deployment for the PR and comments with the URL.
+12. `Codex PR Review Pack` posts the reviewer summary and security notes.
+13. A human manually approves and merges.
+14. `Vercel Deployment` creates a production deployment from `main`.
+15. `Merge And Close Jira` transitions Jira to `Done`.
 
 ## Required GitHub Secrets
 
@@ -36,6 +38,14 @@ Show an AI-assisted delivery lifecycle where Codex turns a request into a Jira s
 - `JENKINS_JOB_NAME`
 - `JENKINS_JOB_TOKEN`
 
+## Optional Vercel Deployment Secrets
+
+- `VERCEL_TOKEN`
+- `VERCEL_ORG_ID`
+- `VERCEL_PROJECT_ID`
+
+`Vercel Deployment` runs on PRs into `main` for preview deployments and on pushes to `main` for production deployments.
+
 ## Manual Merge Guard
 
 No workflow merges PRs. The PR review workflow posts evidence only. Jira moves to `Done` only after GitHub emits a merged PR event.
@@ -44,8 +54,8 @@ No workflow merges PRs. The PR review workflow posts evidence only. Jira moves t
 
 1. Create or fork the Juice Shop demo repository in the customer/demo GitHub org.
 2. Push this pipeline scaffold to the repository.
-3. Ensure the repository has a `develop` branch.
-4. Prefer setting `develop` as the demo repository default branch so `workflow_dispatch` actions are visible from the same branch that PRs target.
+3. Ensure the repository has a `main` branch.
+4. Prefer setting `main` as the demo repository default branch so `workflow_dispatch` actions are visible from the same branch that PRs target.
 5. Add the required GitHub Actions secrets.
 6. Add optional Jenkins secrets if the demo should call a live Jenkins job.
 7. Configure Jira/Rovo automation to call `Jira To Codex PR`, or use `AIDLC Request To Jira` when Codex should create the Jira ticket first.
