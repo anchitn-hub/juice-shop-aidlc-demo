@@ -682,12 +682,19 @@ function configureApp (app: ReturnType<typeof express>, seq: typeof sequelize) {
   app.use(errorhandler())
 }
 
-// Function called first to ensure that all the i18n files are reloaded successfully before other linked operations.
-restoreOverwrittenFilesWithOriginals().then(() => {
+// Vercel functions run from a read-only deployment bundle. The serverless adapter
+// initializes its own Express app through createApp(), so skip startup file
+// restoration side effects there.
+if (process.env.VERCEL === '1') {
   configureApp(app, sequelize)
-}).catch((err) => {
-  console.error(err)
-})
+} else {
+  // Function called first to ensure that all the i18n files are reloaded successfully before other linked operations.
+  restoreOverwrittenFilesWithOriginals().then(() => {
+    configureApp(app, sequelize)
+  }).catch((err) => {
+    console.error(err)
+  })
+}
 
 const uploadToMemory = multer({ storage: multer.memoryStorage(), limits: { fileSize: 200000 } })
 const mimeTypeMap: any = {
