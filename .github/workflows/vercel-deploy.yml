@@ -45,6 +45,12 @@ jobs:
             echo "VERCEL_PROD_FLAG=" >> "$GITHUB_ENV"
           fi
 
+      - name: Link Vercel project
+        run: |
+          rm -rf .vercel
+          mkdir -p .vercel
+          printf '{"orgId":"%s","projectId":"%s"}\n' "$VERCEL_ORG_ID" "$VERCEL_PROJECT_ID" > .vercel/project.json
+
       - name: Pull Vercel project settings
         run: vercel pull --yes --environment="$VERCEL_ENVIRONMENT" --token="${{ secrets.VERCEL_TOKEN }}"
 
