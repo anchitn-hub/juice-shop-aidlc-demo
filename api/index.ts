@@ -16,14 +16,17 @@ async function getApp () {
   return appPromise
 }
 
-function stripVercelFunctionPrefix (req: VercelRequest) {
-  if (req.url?.startsWith('/api/')) {
-    req.url = req.url.substring('/api'.length)
+function restoreJuiceShopPath (req: VercelRequest) {
+  const rawPath = req.query?.juicePath
+  const juicePath = Array.isArray(rawPath) ? rawPath[0] : rawPath
+
+  if (juicePath) {
+    req.url = juicePath.startsWith('/') ? juicePath : `/${juicePath}`
   }
 }
 
 export default async function handler (req: VercelRequest, res: unknown) {
-  stripVercelFunctionPrefix(req)
+  restoreJuiceShopPath(req)
   const app = await getApp()
   return app(req as never, res as never)
 }
