@@ -1,0 +1,65 @@
+name: AIDLC Request To Jira
+
+on:
+  workflow_dispatch:
+    inputs:
+      issue_summary:
+        description: Short Jira story summary
+        required: true
+      issue_description:
+        description: Full change request for Codex
+        required: true
+      issue_type:
+        description: Jira issue type
+        default: Story
+        required: true
+      project_key:
+        description: Jira project key. Defaults to JIRA_PROJECT_KEY secret when empty.
+        required: false
+
+permissions:
+  actions: write
+  contents: read
+
+jobs:
+  create_jira_and_start:
+    runs-on: ubuntu-latest
+    env:
+      JIRA_BASE_URL: ${{ secrets.JIRA_BASE_URL }}
+      JIRA_EMAIL: ${{ secrets.JIRA_EMAIL }}
+      JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
+      JIRA_PROJECT_KEY: ${{ inputs.project_key || secrets.JIRA_PROJECT_KEY }}
+      ISSUE_SUMMARY: ${{ inputs.issue_summary }}
+      ISSUE_DESCRIPTION: ${{ inputs.issue_description }}
+      ISSUE_TYPE: ${{ inputs.issue_type }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Create Jira issue
+        id: create_jira
+        run: |
+          ISSUE_KEY=$(node scripts/jira.mjs create "$ISSUE_SUMMARY" "$ISSUE_DESCRIPTION" "$ISSUE_TYPE")
+          echo "issue_key=$ISSUE_KEY" >> "$GITHUB_OUTPUT"
+
+      - name: Accept Jira issue
+        run: |
+          node scripts/jira.mjs transition "${{ steps.create_jira.outputs.issue_key }}" "In Progress" || true
+          node scripts/jira.mjs comment "${{ steps.create_jira.outputs.issue_key }}" "AIDLC pipeline accepted this request and is starting Codex implementation in GitHub Actions."
+
+      - name: Start Codex implementation workflow
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh workflow run jira-to-codex-pr.yml \
+            -f issue_key="${{ steps.create_jira.outputs.issue_key }}" \
+            -f issue_summary="$ISSUE_SUMMARY" \
+            -f issue_description="$ISSUE_DESCRIPTION" \
+            -f code_change_required="true"
+
+      - name: Comment implementation started
+        run: |
+          node scripts/jira.mjs comment "${{ steps.create_jira.outputs.issue_key }}" "GitHub workflow dispatched for Codex implementation."

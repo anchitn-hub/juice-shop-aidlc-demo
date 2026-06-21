@@ -1,0 +1,39 @@
+name: Merge And Close Jira
+
+on:
+  pull_request:
+    types: [closed]
+
+permissions:
+  contents: read
+
+jobs:
+  close_jira:
+    if: github.event.pull_request.merged == true && startsWith(github.event.pull_request.head.ref, 'codex/')
+    runs-on: ubuntu-latest
+    env:
+      JIRA_BASE_URL: ${{ secrets.JIRA_BASE_URL }}
+      JIRA_EMAIL: ${{ secrets.JIRA_EMAIL }}
+      JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
+      PR_URL: ${{ github.event.pull_request.html_url }}
+      MERGE_SHA: ${{ github.event.pull_request.merge_commit_sha }}
+      HEAD_REF: ${{ github.event.pull_request.head.ref }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Extract Jira issue key
+        id: issue
+        run: |
+          ISSUE_KEY="${HEAD_REF#codex/}"
+          echo "issue_key=$ISSUE_KEY" >> "$GITHUB_OUTPUT"
+
+      - name: Jira to Done
+        run: node scripts/jira.mjs transition "${{ steps.issue.outputs.issue_key }}" "Done" || true
+
+      - name: Comment merge in Jira
+        run: |
+          node scripts/jira.mjs comment "${{ steps.issue.outputs.issue_key }}" "PR manually merged: ${PR_URL} (${MERGE_SHA})"

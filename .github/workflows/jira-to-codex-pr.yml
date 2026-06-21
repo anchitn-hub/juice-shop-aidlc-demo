@@ -1,0 +1,133 @@
+name: Jira To Codex PR
+
+on:
+  workflow_dispatch:
+    inputs:
+      issue_key:
+        description: Jira issue key
+        required: true
+      issue_summary:
+        description: Jira issue summary
+        required: true
+      issue_description:
+        description: Jira issue description
+        required: true
+      code_change_required:
+        description: Fail if Codex only creates docs/artifacts
+        default: "true"
+        required: true
+
+permissions:
+  actions: write
+  contents: write
+  pull-requests: write
+
+jobs:
+  codex_implement:
+    runs-on: ubuntu-latest
+    env:
+      ISSUE_KEY: ${{ inputs.issue_key }}
+      ISSUE_SUMMARY: ${{ inputs.issue_summary }}
+      ISSUE_DESCRIPTION: ${{ inputs.issue_description }}
+      CODE_CHANGE_REQUIRED: ${{ inputs.code_change_required }}
+      JIRA_BASE_URL: ${{ secrets.JIRA_BASE_URL }}
+      JIRA_EMAIL: ${{ secrets.JIRA_EMAIL }}
+      JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: develop
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - run: npm ci
+
+      - name: Jira to In Progress
+        run: node scripts/jira.mjs transition "$ISSUE_KEY" "In Progress" || true
+
+      - name: Comment Codex start in Jira
+        run: |
+          node scripts/jira.mjs comment "$ISSUE_KEY" "Codex started implementation. It will generate design/test artifacts, make the code change, run checks, run security review, and open a PR for manual approval."
+
+      - name: Codex implement Jira story
+        uses: openai/codex-action@v1
+        with:
+          openai-api-key: ${{ secrets.OPENAI_API_KEY }}
+          prompt-file: .github/codex/prompts/implement-from-jira.md
+
+      - name: Guard against docs-only implementation
+        run: node scripts/check-aidlc-diff.mjs
+
+      - name: Run project checks
+        run: |
+          npm run lint
+          npm test
+
+      - name: Prepare security evidence
+        run: mkdir -p "docs/${ISSUE_KEY}" artifacts
+
+      - name: Codex pre-PR security review
+        id: security_review
+        uses: openai/codex-action@v1
+        with:
+          allow-bots: true
+          openai-api-key: ${{ secrets.OPENAI_API_KEY }}
+          prompt-file: .github/codex/prompts/security-pre-pr.md
+          output-file: docs/${{ inputs.issue_key }}/security-pre-pr.md
+
+      - name: Enforce security decision
+        run: |
+          if ! grep -q '^SECURITY_DECISION: pass$' "docs/${ISSUE_KEY}/security-pre-pr.md"; then
+            node scripts/jira.mjs comment "$ISSUE_KEY" "Codex security review blocked PR creation. Check the failed workflow artifact for findings."
+            cat "docs/${ISSUE_KEY}/security-pre-pr.md"
+            exit 1
+          fi
+
+      - name: Jenkins demo gate
+        env:
+          JENKINS_URL: ${{ secrets.JENKINS_URL }}
+          JENKINS_USER: ${{ secrets.JENKINS_USER }}
+          JENKINS_API_TOKEN: ${{ secrets.JENKINS_API_TOKEN }}
+          JENKINS_JOB_TOKEN: ${{ secrets.JENKINS_JOB_TOKEN }}
+          JENKINS_JOB_NAME: ${{ secrets.JENKINS_JOB_NAME }}
+        run: node scripts/jenkins-demo-gate.mjs
+
+      - name: Commit changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git checkout -b "codex/${ISSUE_KEY}"
+          git add -A
+          git commit -s -m "feat(${ISSUE_KEY}): ${ISSUE_SUMMARY}"
+
+      - name: Push branch
+        run: git push --set-upstream origin "codex/${ISSUE_KEY}"
+
+      - name: Create pull request
+        id: create_pr
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          PR_URL=$(gh pr create \
+            --base develop \
+            --head "codex/${ISSUE_KEY}" \
+            --title "${ISSUE_SUMMARY} (${ISSUE_KEY})" \
+            --body-file "docs/${ISSUE_KEY}/pr-summary.md")
+          echo "pr_url=$PR_URL" >> "$GITHUB_OUTPUT"
+          PR_NUMBER=$(gh pr view "$PR_URL" --json number --jq .number)
+          echo "pr_number=$PR_NUMBER" >> "$GITHUB_OUTPUT"
+
+      - name: Dispatch Codex PR review workflow
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh workflow run pr-review-pack.yml -f pr_number="${{ steps.create_pr.outputs.pr_number }}"
+
+      - name: Jira to In Review
+        run: node scripts/jira.mjs transition "$ISSUE_KEY" "In Review" || true
+
+      - name: Comment PR URL in Jira
+        run: |
+          node scripts/jira.mjs comment "$ISSUE_KEY" "PR created by Codex and ready for manual review: ${{ steps.create_pr.outputs.pr_url }}"
