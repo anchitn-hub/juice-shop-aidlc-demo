@@ -78,7 +78,6 @@ import * as twoFactorAuth from './routes/2fa'
 import { applyCoupon } from './routes/coupon'
 import dataErasure from './routes/dataErasure'
 import { dataExport } from './routes/dataExport'
-import { chat } from './routes/chat'
 import { retrieveBasket } from './routes/basket'
 import { searchProducts } from './routes/search'
 import { trackOrder } from './routes/trackOrder'
@@ -137,6 +136,17 @@ const errorhandler = require('errorhandler')
 const startTime = Date.now()
 
 const swaggerDocument = yaml.load(fs.readFileSync('./swagger.yml', 'utf8'))
+
+function chatRoute () {
+  if (process.env.VERCEL === '1') {
+    return (_req: Request, res: Response) => {
+      res.status(503).json({ error: 'Chatbot is not available on the Vercel demo deployment.' })
+    }
+  }
+
+  const { chat } = require('./routes/chat') as typeof import('./routes/chat')
+  return chat()
+}
 
 const appName = config.get<string>('application.customMetricsPrefix')
 const startupGauge = new Prometheus.Gauge({
@@ -635,7 +645,7 @@ function configureApp (app: ReturnType<typeof express>, seq: typeof sequelize) {
   app.post('/rest/products/reviews', security.isAuthorized(), utils.asyncHandler(likeProductReviews()))
 
   /* Chat API endpoint */
-  app.post('/rest/chat', utils.asyncHandler(chat()))
+  app.post('/rest/chat', utils.asyncHandler(chatRoute()))
 
   /* Web3 API endpoints */
   app.post('/rest/web3/submitKey', utils.asyncHandler(checkKeys()))
