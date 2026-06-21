@@ -173,9 +173,11 @@ const collectDurationPromise = (name: string, func: (...args: any) => Promise<an
 /* Sets view engine to hbs */
 app.set('view engine', 'hbs')
 
-void collectDurationPromise('validatePreconditions', validatePreconditions)()
+const exitOnStartupFailure = process.env.VERCEL !== '1'
+
+void collectDurationPromise('validatePreconditions', validatePreconditions)({ exitOnFailure: exitOnStartupFailure })
 void collectDurationPromise('cleanupFtpFolder', cleanupFtpFolder)()
-void collectDurationPromise('validateConfig', validateConfig)({})
+void collectDurationPromise('validateConfig', validateConfig)({ exitOnFailure: exitOnStartupFailure })
 
 function configureApp (app: ReturnType<typeof express>, seq: typeof sequelize) {
   /* Locals */
@@ -310,7 +312,7 @@ function configureApp (app: ReturnType<typeof express>, seq: typeof sequelize) {
     directory: path.resolve('i18n'),
     cookie: 'language',
     defaultLocale: 'en',
-    autoReload: true
+    autoReload: process.env.VERCEL !== '1'
   })
   app.use(i18n.init)
 
@@ -696,7 +698,7 @@ function configureApp (app: ReturnType<typeof express>, seq: typeof sequelize) {
 // initializes its own Express app through createApp(), so skip startup file
 // restoration side effects there.
 if (process.env.VERCEL === '1') {
-  configureApp(app, sequelize)
+  // createApp() configures an isolated Express app for each serverless runtime.
 } else {
   // Function called first to ensure that all the i18n files are reloaded successfully before other linked operations.
   restoreOverwrittenFilesWithOriginals().then(() => {
