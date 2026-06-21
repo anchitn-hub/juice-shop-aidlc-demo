@@ -117,14 +117,12 @@ import { retrieveAppConfiguration } from './routes/appConfiguration'
 import { updateProductReviews } from './routes/updateProductReviews'
 import { servePrivacyPolicyProof } from './routes/privacyPolicyProof'
 import { profileImageUrlUpload } from './routes/profileImageUrlUpload'
-import { profileImageFileUpload } from './routes/profileImageFileUpload'
 import { serveCodeFixes, checkCorrectFix } from './routes/vulnCodeFixes'
 import { imageCaptchas, verifyImageCaptcha } from './routes/imageCaptcha'
 import { upgradeToDeluxe, deluxeMembershipStatus } from './routes/deluxe'
 import { serveCodeSnippet, checkVulnLines } from './routes/vulnCodeSnippet'
 import { orderHistory, allOrders, toggleDeliveryStatus } from './routes/orderHistory'
 import { continueCode, continueCodeFindIt, continueCodeFixIt } from './routes/continueCode'
-import { ensureFileIsPassed, handleZipFileUpload, checkUploadSize, checkFileType, handleXmlUpload, handleYamlUpload } from './routes/fileUpload'
 
 const app = express()
 const server = new http.Server(app)
@@ -137,15 +135,52 @@ const startTime = Date.now()
 
 const swaggerDocument = yaml.load(fs.readFileSync('./swagger.yml', 'utf8'))
 
+function unavailableOnVercel (feature: string) {
+  return (_req: Request, res: Response) => {
+    res.status(503).json({ error: `${feature} is not available on the Vercel demo deployment.` })
+  }
+}
+
 function chatRoute () {
   if (process.env.VERCEL === '1') {
-    return (_req: Request, res: Response) => {
-      res.status(503).json({ error: 'Chatbot is not available on the Vercel demo deployment.' })
-    }
+    return unavailableOnVercel('Chatbot')
   }
 
   const { chat } = require('./routes/chat') as typeof import('./routes/chat')
   return chat()
+}
+
+function profileImageFileUploadRoute () {
+  if (process.env.VERCEL === '1') {
+    return unavailableOnVercel('Profile image file upload')
+  }
+
+  const { profileImageFileUpload } = require('./routes/profileImageFileUpload') as typeof import('./routes/profileImageFileUpload')
+  return profileImageFileUpload()
+}
+
+function ensureFileIsPassed ({ file }: Request, res: Response, next: NextFunction) {
+  if (file != null) {
+    next()
+  } else {
+    return res.status(400).json({ error: 'File is not passed' })
+  }
+}
+
+function registerFileUploadRoute (app: ReturnType<typeof express>) {
+  if (process.env.VERCEL === '1') {
+    app.post('/file-upload', unavailableOnVercel('File upload'))
+    return
+  }
+
+  const {
+    handleZipFileUpload,
+    checkUploadSize,
+    checkFileType,
+    handleXmlUpload,
+    handleYamlUpload
+  } = require('./routes/fileUpload') as typeof import('./routes/fileUpload')
+  app.post('/file-upload', uploadToMemory.single('file'), ensureFileIsPassed, metrics.observeFileUploadMetricsMiddleware(), checkUploadSize, checkFileType, handleZipFileUpload, handleXmlUpload, handleYamlUpload)
 }
 
 const appName = config.get<string>('application.customMetricsPrefix')
@@ -318,8 +353,8 @@ function configureApp (app: ReturnType<typeof express>, seq: typeof sequelize) {
 
   app.use(bodyParser.urlencoded({ extended: true }))
   /* File Upload */
-  app.post('/file-upload', uploadToMemory.single('file'), ensureFileIsPassed, metrics.observeFileUploadMetricsMiddleware(), checkUploadSize, checkFileType, handleZipFileUpload, handleXmlUpload, handleYamlUpload)
-  app.post('/profile/image/file', uploadToMemory.single('file'), ensureFileIsPassed, metrics.observeFileUploadMetricsMiddleware(), utils.asyncHandler(profileImageFileUpload()))
+  registerFileUploadRoute(app)
+  app.post('/profile/image/file', uploadToMemory.single('file'), ensureFileIsPassed, metrics.observeFileUploadMetricsMiddleware(), utils.asyncHandler(profileImageFileUploadRoute()))
   app.post('/profile/image/url', uploadToMemory.single('file'), utils.asyncHandler(profileImageUrlUpload()))
   app.post('/rest/memories', uploadToDisk.single('image'), ensureFileIsPassed, security.appendUserId(), metrics.observeFileUploadMetricsMiddleware(), utils.asyncHandler(addMemory()))
 
