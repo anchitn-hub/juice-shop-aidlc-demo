@@ -12,7 +12,7 @@ Repository rules:
 2. Juice Shop is intentionally vulnerable. Do not add new vulnerabilities, new challenges, or challenge behavior unless the Jira story explicitly asks for that and the acceptance criteria are clear.
 3. Do not modify translations directly. Use UI copy that does not require i18n changes unless the Jira story explicitly scopes localization.
 4. Remove AI-generated noise. Keep comments only when they explain non-obvious logic.
-5. Keep the change focused and suitable for a PR into `develop`.
+5. Keep the change focused and suitable for a PR into `main`.
 
 Before code changes, create:
 
