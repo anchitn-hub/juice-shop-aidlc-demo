@@ -9,7 +9,7 @@ Show the golden AI-assisted delivery lifecycle where Codex turns a request into 
 1. Start from Codex with a change request.
 2. Dispatch `AIDLC Request To Jira`.
 3. The workflow creates a Jira Story and transitions it to `In Progress`.
-4. The workflow dispatches `Jira To Codex PR`.
+4. Jira Automation sees the new Jira story and dispatches `Jira To Codex PR`.
 5. Codex implements the story in a `codex/<JIRA_KEY>` branch.
 6. The workflow rejects docs-only changes when a code change is required.
 7. `npm run lint`, `npm run test:frontend`, and `npm run test:server` run. The full aggregate `npm test` command still exists for local/upstream use, but the AIDLC demo gate avoids API tests that depend on external services and seeded runtime preconditions.
@@ -63,7 +63,7 @@ Strict UI rule: use only the Chrome profile named `theaicompany.org`, logged in 
 4. Set `main` as the repository default branch. This is required for the golden pipeline; `develop` must not remain the demo default.
 5. Add the required GitHub Actions secrets.
 6. Add optional Jenkins secrets if the demo should call a live Jenkins job.
-7. Configure Jira/Rovo automation to call `Jira To Codex PR`, or use `AIDLC Request To Jira` when Codex should create the Jira ticket first.
+7. Configure Jira/Rovo automation to call `Jira To Codex PR`. `AIDLC Request To Jira` only creates the Jira ticket; Jira Automation must be the single handoff into GitHub Actions.
    - Jira Automation trigger: work item created in `AIDLC`.
    - Jira Automation action: send web request to `https://api.github.com/repos/anchitn-hub/juice-shop-aidlc-demo/actions/workflows/jira-to-codex-pr.yml/dispatches`.
    - Required GitHub token scope for that web request: fine-grained token limited to `anchitn-hub/juice-shop-aidlc-demo` with `Actions: Read and write` and required `Metadata: Read-only`.

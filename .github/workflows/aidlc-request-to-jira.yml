@@ -18,7 +18,6 @@ on:
         required: false
 
 permissions:
-  actions: write
   contents: read
 
 jobs:
@@ -50,16 +49,6 @@ jobs:
           node scripts/jira.mjs transition "${{ steps.create_jira.outputs.issue_key }}" "In Progress" || true
           node scripts/jira.mjs comment "${{ steps.create_jira.outputs.issue_key }}" "AIDLC pipeline accepted this request and is starting Codex implementation in GitHub Actions."
 
-      - name: Start Codex implementation workflow
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Comment Jira automation handoff
         run: |
-          gh workflow run jira-to-codex-pr.yml \
-            -f issue_key="${{ steps.create_jira.outputs.issue_key }}" \
-            -f issue_summary="$ISSUE_SUMMARY" \
-            -f issue_description="$ISSUE_DESCRIPTION" \
-            -f code_change_required="true"
-
-      - name: Comment implementation started
-        run: |
-          node scripts/jira.mjs comment "${{ steps.create_jira.outputs.issue_key }}" "GitHub workflow dispatched for Codex implementation."
+          node scripts/jira.mjs comment "${{ steps.create_jira.outputs.issue_key }}" "Jira issue created by Codex. Jira Automation is now responsible for dispatching the GitHub Codex implementation workflow."
