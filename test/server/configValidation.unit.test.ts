@@ -30,10 +30,10 @@ void describe('configValidation', () => {
       assert.equal(product?.price, 2.99)
     })
 
-    void it('sets Banana Juice 1000ml price to 2.49', () => {
+    void it('sets Banana Juice 1000ml price to 1.49', () => {
       const product = config.get<Product[]>('products').find(({ name }) => name === 'Banana Juice (1000ml)')
 
-      assert.equal(product?.price, 2.49)
+      assert.equal(product?.price, 1.49)
     })
   })
 
