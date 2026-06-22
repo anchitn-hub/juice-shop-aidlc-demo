@@ -29,7 +29,7 @@ describe('QuantityService', () => {
 
         let res
         service.getAll().subscribe((data) => (res = data))
-        const req = httpMock.expectOne('http://localhost:3000/api/Quantitys/')
+        const req = httpMock.expectOne('http://localhost:3000/api/Quantitys')
         req.flush({ data: 'apiResponse' })
         expect(req.request.method).toBe('GET')
         expect(req.request.params.toString()).toBeFalsy()
@@ -57,7 +57,7 @@ describe('QuantityService', () => {
 
         let capturedError: any
         service.getAll().subscribe({ next: () => { throw new Error('expected error') }, error: (e) => { capturedError = e } })
-        const req = httpMock.expectOne('http://localhost:3000/api/Quantitys/')
+        const req = httpMock.expectOne('http://localhost:3000/api/Quantitys')
         req.error(new ErrorEvent('Request failed'), { status: 500, statusText: 'Internal Server Error' })
         expect(capturedError.status).toBe(500)
         httpMock.verify()

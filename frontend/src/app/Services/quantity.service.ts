@@ -18,7 +18,7 @@ export class QuantityService {
   private readonly host = this.hostServer + '/api/Quantitys'
 
   getAll () {
-    return this.http.get(this.host + '/').pipe(map((response: any) => response.data), catchError((err) => { throw err }))
+    return this.http.get(this.host).pipe(map((response: any) => response.data), catchError((err) => { throw err }))
   }
 
   put (id: number, params) {
