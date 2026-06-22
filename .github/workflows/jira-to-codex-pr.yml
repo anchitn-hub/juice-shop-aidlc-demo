@@ -77,7 +77,18 @@ jobs:
           allow-bots: true
           openai-api-key: ${{ secrets.OPENAI_API_KEY }}
           prompt-file: .github/codex/prompts/security-pre-pr.md
-          output-file: docs/${{ inputs.issue_key }}/security-pre-pr.md
+          safety-strategy: read-only
+
+      - name: Write security evidence
+        env:
+          CODEX_FINAL_MESSAGE: ${{ steps.security_review.outputs.final-message }}
+        run: |
+          node - <<'NODE'
+          const fs = require('node:fs')
+          const path = `docs/${process.env.ISSUE_KEY}/security-pre-pr.md`
+          const message = process.env.CODEX_FINAL_MESSAGE || 'SECURITY_DECISION: fail\nNo security review output was returned.'
+          fs.writeFileSync(path, message)
+          NODE
 
       - name: Enforce security decision
         run: |
