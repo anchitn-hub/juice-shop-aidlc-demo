@@ -22,7 +22,8 @@ Show the golden AI-assisted delivery lifecycle where Codex turns a request into 
 14. `PR Approval Jira Update` comments on the Jira issue and attempts to move it to `Approved`.
 15. A human manually merges into `main`.
 16. `Vercel Deployment` creates a production deployment from `main`.
-17. `Merge And Close Jira` transitions Jira to `Done`.
+17. `Vercel Deployment` comments the production deployment URL on the Jira issue.
+18. `Merge And Close Jira` transitions Jira to `Done`.
 
 ## Required GitHub Secrets
 

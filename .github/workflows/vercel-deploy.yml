@@ -2,108 +2,107 @@ name: Vercel Deployment
 
 on:
   push:
-      branches: [main]
-        pull_request:
-            branches: [main]
-                types: [opened, synchronize, reopened]
-                  workflow_dispatch:
+    branches: [main]
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened]
+  workflow_dispatch:
 
-                  permissions:
-                    contents: read
-                      pull-requests: write
+permissions:
+  contents: read
+  pull-requests: write
 
-                      env:
-                        VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-                          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-                            VERCEL_SCOPE: anchitn-5005s-projects
+env:
+  VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+  VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+  VERCEL_SCOPE: anchitn-5005s-projects
 
-                            jobs:
-                              deploy:
-                                  runs-on: ubuntu-latest
-                                      steps:
-                                            - uses: actions/checkout@v5
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
 
-                                                  - uses: actions/setup-node@v4
-                                                          with:
-                                                                    node-version: 24
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
 
-                                                                          - name: Validate Vercel secrets
-                                                                                  run: |
-                                                                                            test -n "${{ secrets.VERCEL_TOKEN }}"
-                                                                                                      test -n "$VERCEL_ORG_ID"
-                                                                                                                test -n "$VERCEL_PROJECT_ID"
-                                                                                                                
-                                                                                                                      - name: Install Vercel CLI
-                                                                                                                              run: npm install --global vercel@latest
-                                                                                                                              
-                                                                                                                                    - name: Select Vercel environment
-                                                                                                                                            run: |
-                                                                                                                                                      if [ "${{ github.event_name }}" = "push" ] && [ "${{ github.ref }}" = "refs/heads/main" ]; then
-                                                                                                                                                                  echo "VERCEL_ENVIRONMENT=production" >> "$GITHUB_ENV"
-                                                                                                                                                                              echo "VERCEL_PROD_FLAG=--prod" >> "$GITHUB_ENV"
-                                                                                                                                                                                        else
-                                                                                                                                                                                                    echo "VERCEL_ENVIRONMENT=preview" >> "$GITHUB_ENV"
-                                                                                                                                                                                                                echo "VERCEL_PROD_FLAG=" >> "$GITHUB_ENV"
-                                                                                                                                                                                                                          fi
-                                                                                                                                                                                                                          
-                                                                                                                                                                                                                                - name: Link Vercel project
-                                                                                                                                                                                                                                        run: |
-                                                                                                                                                                                                                                                  rm -rf .vercel
-                                                                                                                                                                                                                                                            mkdir -p .vercel
-                                                                                                                                                                                                                                                                      printf '{"orgId":"%s","projectId":"%s"}\n' "$VERCEL_ORG_ID" "$VERCEL_PROJECT_ID" > .vercel/project.json
-                                                                                                                                                                                                                                                                      
-                                                                                                                                                                                                                                                                            - name: Pull Vercel project settings
-                                                                                                                                                                                                                                                                                    run: vercel pull --yes --environment="$VERCEL_ENVIRONMENT" --scope="$VERCEL_SCOPE" --token="${{ secrets.VERCEL_TOKEN }}"
-                                                                                                                                                                                                                                                                                    
-                                                                                                                                                                                                                                                                                          - name: Build Vercel output
-                                                                                                                                                                                                                                                                                                  run: vercel build $VERCEL_PROD_FLAG --scope="$VERCEL_SCOPE" --token="${{ secrets.VERCEL_TOKEN }}"
-                                                                                                                                                                                                                                                                                                  
-                                                                                                                                                                                                                                                                                                        - name: Deploy Vercel output
-                                                                                                                                                                                                                                                                                                                id: deploy
-                                                                                                                                                                                                                                                                                                                        run: |
-                                                                                                                                                                                                                                                                                                                                  DEPLOYMENT_URL=$(vercel deploy --prebuilt $VERCEL_PROD_FLAG --scope="$VERCEL_SCOPE" --token="${{ secrets.VERCEL_TOKEN }}")
-                                                                                                                                                                                                                                                                                                                                            echo "url=$DEPLOYMENT_URL" >> "$GITHUB_OUTPUT"
-                                                                                                                                                                                                                                                                                                                                                      echo "### Vercel deployment" >> "$GITHUB_STEP_SUMMARY"
-                                                                                                                                                                                                                                                                                                                                                                echo "$DEPLOYMENT_URL" >> "$GITHUB_STEP_SUMMARY"
-                                                                                                                                                                                                                                                                                                                                                                
-                                                                                                                                                                                                                                                                                                                                                                      - name: Comment production deployment in Jira
-                                                                                                                                                                                                                                                                                                                                                                              if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-                                                                                                                                                                                                                                                                                                                                                                                      env:
-                                                                                                                                                                                                                                                                                                                                                                                                GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-                                                                                                                                                                                                                                                                                                                                                                                                          JIRA_BASE_URL: ${{ secrets.JIRA_BASE_URL }}
-                                                                                                                                                                                                                                                                                                                                                                                                                    JIRA_EMAIL: ${{ secrets.JIRA_EMAIL }}
-                                                                                                                                                                                                                                                                                                                                                                                                                              JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
-                                                                                                                                                                                                                                                                                                                                                                                                                                        DEPLOYMENT_URL: ${{ steps.deploy.outputs.url }}
-                                                                                                                                                                                                                                                                                                                                                                                                                                                run: |
-                                                                                                                                                                                                                                                                                                                                                                                                                                                          PR_JSON=$(gh api \
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                      -H "Accept: application/vnd.github+json" \
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  "repos/${GITHUB_REPOSITORY}/commits/${GITHUB_SHA}/pulls" \
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              --jq '.[0] // empty')
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        if [ -z "$PR_JSON" ]; then
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    echo "No associated pull request for ${GITHUB_SHA}; skipping Jira deployment comment."
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                exit 0
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          fi
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    HEAD_REF=$(printf '%s' "$PR_JSON" | node -e "let input=''; process.stdin.on('data', chunk => input += chunk); process.stdin.on('end', () => { const pr = JSON.parse(input); process.stdout.write(pr.head?.ref || '') })")
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              if [[ "$HEAD_REF" != codex/* ]]; then
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          echo "Associated PR head ref is not codex/* (${HEAD_REF}); skipping Jira deployment comment."
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      exit 0
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                fi
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          ISSUE_KEY="${HEAD_REF#codex/}"
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    node scripts/jira.mjs comment "$ISSUE_KEY" "Production deployment completed from main: ${DEPLOYMENT_URL} (${GITHUB_SHA})."
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          - name: Comment preview URL on PR
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  if: github.event_name == 'pull_request'
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          uses: actions/github-script@v7
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  with:
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            script: |
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        await github.rest.issues.createComment({
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      owner: context.repo.owner,
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    repo: context.repo.repo,
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  issue_number: context.issue.number,
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                body: `Vercel preview deployment: ${{ steps.deploy.outputs.url }}`
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            })
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            
+      - name: Validate Vercel secrets
+        run: |
+          test -n "${{ secrets.VERCEL_TOKEN }}"
+          test -n "$VERCEL_ORG_ID"
+          test -n "$VERCEL_PROJECT_ID"
+
+      - name: Install Vercel CLI
+        run: npm install --global vercel@latest
+
+      - name: Select Vercel environment
+        run: |
+          if [ "${{ github.event_name }}" = "push" ] && [ "${{ github.ref }}" = "refs/heads/main" ]; then
+            echo "VERCEL_ENVIRONMENT=production" >> "$GITHUB_ENV"
+            echo "VERCEL_PROD_FLAG=--prod" >> "$GITHUB_ENV"
+          else
+            echo "VERCEL_ENVIRONMENT=preview" >> "$GITHUB_ENV"
+            echo "VERCEL_PROD_FLAG=" >> "$GITHUB_ENV"
+          fi
+
+      - name: Link Vercel project
+        run: |
+          rm -rf .vercel
+          mkdir -p .vercel
+          printf '{"orgId":"%s","projectId":"%s"}\n' "$VERCEL_ORG_ID" "$VERCEL_PROJECT_ID" > .vercel/project.json
+
+      - name: Pull Vercel project settings
+        run: vercel pull --yes --environment="$VERCEL_ENVIRONMENT" --scope="$VERCEL_SCOPE" --token="${{ secrets.VERCEL_TOKEN }}"
+
+      - name: Build Vercel output
+        run: vercel build $VERCEL_PROD_FLAG --scope="$VERCEL_SCOPE" --token="${{ secrets.VERCEL_TOKEN }}"
+
+      - name: Deploy Vercel output
+        id: deploy
+        run: |
+          DEPLOYMENT_URL=$(vercel deploy --prebuilt $VERCEL_PROD_FLAG --scope="$VERCEL_SCOPE" --token="${{ secrets.VERCEL_TOKEN }}")
+          echo "url=$DEPLOYMENT_URL" >> "$GITHUB_OUTPUT"
+          echo "### Vercel deployment" >> "$GITHUB_STEP_SUMMARY"
+          echo "$DEPLOYMENT_URL" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Comment production deployment in Jira
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          JIRA_BASE_URL: ${{ secrets.JIRA_BASE_URL }}
+          JIRA_EMAIL: ${{ secrets.JIRA_EMAIL }}
+          JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
+          DEPLOYMENT_URL: ${{ steps.deploy.outputs.url }}
+        run: |
+          PR_JSON=$(gh api \
+            -H "Accept: application/vnd.github+json" \
+            "repos/${GITHUB_REPOSITORY}/commits/${GITHUB_SHA}/pulls" \
+            --jq '.[0] // empty')
+
+          if [ -z "$PR_JSON" ]; then
+            echo "No associated pull request for ${GITHUB_SHA}; skipping Jira deployment comment."
+            exit 0
+          fi
+
+          HEAD_REF=$(printf '%s' "$PR_JSON" | node -e "let input=''; process.stdin.on('data', chunk => input += chunk); process.stdin.on('end', () => { const pr = JSON.parse(input); process.stdout.write(pr.head?.ref || '') })")
+
+          if [[ "$HEAD_REF" != codex/* ]]; then
+            echo "Associated PR head ref is not codex/* (${HEAD_REF}); skipping Jira deployment comment."
+            exit 0
+          fi
+
+          ISSUE_KEY="${HEAD_REF#codex/}"
+          node scripts/jira.mjs comment "$ISSUE_KEY" "Production deployment completed from main: ${DEPLOYMENT_URL} (${GITHUB_SHA})."
+
+      - name: Comment preview URL on PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: `Vercel preview deployment: ${{ steps.deploy.outputs.url }}`
+            })
