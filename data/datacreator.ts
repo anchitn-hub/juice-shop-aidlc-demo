@@ -791,6 +791,10 @@ async function createOrders () {
 }
 
 async function prepareFilesystem () {
+  if (process.env.VERCEL === '1') {
+    return
+  }
+
   replace({
     regex: 'http://localhost:3000',
     replacement: config.get<string>('server.baseUrl'),
