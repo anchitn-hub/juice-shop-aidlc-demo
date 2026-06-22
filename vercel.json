@@ -4,7 +4,7 @@
   "outputDirectory": "frontend/dist/frontend",
   "functions": {
     "api/**/*.ts": {
-      "includeFiles": "{node_modules/sqlite3/**/*,config/**/*,data/**/*,i18n/**/*,views/**/*,frontend/dist/frontend/**/*,swagger.yml,ctf.key}",
+      "includeFiles": "{build/**/*,node_modules/sqlite3/**/*,config/**/*,data/**/*,i18n/**/*,views/**/*,frontend/dist/frontend/**/*,swagger.yml,ctf.key}",
       "maxDuration": 60
     }
   },
