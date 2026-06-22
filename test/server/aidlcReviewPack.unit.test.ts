@@ -6,7 +6,7 @@
 import { describe, it, mock } from 'node:test'
 import assert from 'node:assert/strict'
 
-import { verifyReviewPack } from '../../routes/aidlcReviewPack'
+import { pipelineStatus, verifyReviewPack } from '../../routes/aidlcReviewPack'
 
 void describe('aidlcReviewPack', () => {
   void it('should return review pack verification metadata', () => {
@@ -21,6 +21,20 @@ void describe('aidlcReviewPack', () => {
         issueKey: 'AIDLC-10',
         reviewPack: 'aidlc-smoke',
         verification: 'ready'
+      }
+    })
+  })
+
+  void it('should return pipeline status', () => {
+    const req: any = {}
+    const res: any = { json: mock.fn() }
+
+    pipelineStatus()(req, res)
+
+    assert.deepEqual(res.json.mock.calls[0].arguments[0], {
+      status: 'success',
+      data: {
+        pipeline: 'golden'
       }
     })
   })

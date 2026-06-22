@@ -17,3 +17,14 @@ export function verifyReviewPack () {
     })
   }
 }
+
+export function pipelineStatus () {
+  return (_req: Request, res: Response) => {
+    res.json({
+      status: 'success',
+      data: {
+        pipeline: 'golden'
+      }
+    })
+  }
+}
