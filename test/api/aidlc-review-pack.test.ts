@@ -33,3 +33,19 @@ void describe('/rest/aidlc/review-pack', () => {
     })
   })
 })
+
+void describe('/rest/aidlc/pipeline-status', () => {
+  void it('GET pipeline status', async () => {
+    const res = await request(app)
+      .get('/rest/aidlc/pipeline-status')
+
+    assert.equal(res.status, 200)
+    assert.match(res.headers['content-type'], /^application\/json/)
+    assert.deepEqual(res.body, {
+      status: 'success',
+      data: {
+        pipeline: 'golden'
+      }
+    })
+  })
+})
