@@ -18,9 +18,11 @@ Show an AI-assisted delivery lifecycle where Codex turns a request into a Jira s
 10. The workflow opens a PR into `main`.
 11. `Vercel Deployment` creates a preview deployment for the PR and comments with the URL.
 12. `Codex PR Review Pack` posts the reviewer summary and security notes.
-13. A human manually approves and merges.
-14. `Vercel Deployment` creates a production deployment from `main`.
-15. `Merge And Close Jira` transitions Jira to `Done`.
+13. A human manually approves the PR.
+14. `PR Approval Jira Update` comments on the Jira issue and attempts to move it to `Approved`.
+15. A human manually merges into `main`.
+16. `Vercel Deployment` creates a production deployment from `main`.
+17. `Merge And Close Jira` transitions Jira to `Done`.
 
 ## Required GitHub Secrets
 
@@ -59,6 +61,9 @@ No workflow merges PRs. The PR review workflow posts evidence only. Jira moves t
 5. Add the required GitHub Actions secrets.
 6. Add optional Jenkins secrets if the demo should call a live Jenkins job.
 7. Configure Jira/Rovo automation to call `Jira To Codex PR`, or use `AIDLC Request To Jira` when Codex should create the Jira ticket first.
+   - Jira Automation trigger: work item created in `AIDLC`.
+   - Jira Automation action: send web request to `https://api.github.com/repos/anchitn-hub/juice-shop-aidlc-demo/actions/workflows/jira-to-codex-pr.yml/dispatches`.
+   - Required GitHub token scope for that web request: fine-grained token limited to `anchitn-hub/juice-shop-aidlc-demo` with `Actions: Read and write` and required `Metadata: Read-only`.
 8. Confirm branch protection requires manual review before merge.
 
 ## Local GitHub CLI Isolation
