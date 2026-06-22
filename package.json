@@ -159,7 +159,8 @@
     "zod": "^4.4.3"
   },
   "overrides": {
-    "@scure/base": "1.2.6"
+    "@scure/base": "1.2.6",
+    "@noble/hashes": "1.8.0"
   },
   "devDependencies": {
     "@cyclonedx/cyclonedx-npm": "^2.0.0||^3.0.0||^4.00",
