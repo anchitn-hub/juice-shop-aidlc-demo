@@ -12,7 +12,7 @@ Show the golden AI-assisted delivery lifecycle where Codex turns a request into 
 4. The workflow dispatches `Jira To Codex PR`.
 5. Codex implements the story in a `codex/<JIRA_KEY>` branch.
 6. The workflow rejects docs-only changes when a code change is required.
-7. `npm run lint` and `npm test` run.
+7. `npm run lint`, `npm run test:frontend`, and `npm run test:server` run. The full aggregate `npm test` command still exists for local/upstream use, but the AIDLC demo gate avoids API tests that depend on external services and seeded runtime preconditions.
 8. Codex runs pre-PR security review and writes `docs/<JIRA_KEY>/security-pre-pr.md`.
 9. Jenkins demo gate runs. If Jenkins credentials are absent, it writes a simulated evidence artifact.
 10. The workflow opens a PR into `main`.

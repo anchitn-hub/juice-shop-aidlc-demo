@@ -25,7 +25,7 @@ Then:
 1. Inspect the relevant code and tests.
 2. Make the smallest code change that satisfies the Jira story.
 3. Add or update appropriate tests.
-4. Prefer targeted tests while iterating, then leave `npm run lint` and `npm test` clean for the workflow.
+4. Prefer targeted tests while iterating, then leave `npm run lint`, `npm run test:frontend`, and `npm run test:server` clean for the workflow.
 5. If challenge-related code is modified, run or document the need for `npm run rsn`.
 6. Write `docs/${ISSUE_KEY}/pr-summary.md` with:
    - Jira link/key

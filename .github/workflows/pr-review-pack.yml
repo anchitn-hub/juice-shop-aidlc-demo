@@ -37,7 +37,8 @@ jobs:
       - name: Run review checks
         run: |
           npm run lint
-          npm test
+          npm run test:frontend
+          npm run test:server
 
       - name: Prepare artifacts directory
         run: mkdir -p artifacts

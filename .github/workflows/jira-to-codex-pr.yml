@@ -64,7 +64,8 @@ jobs:
       - name: Run project checks
         run: |
           npm run lint
-          npm test
+          npm run test:frontend
+          npm run test:server
 
       - name: Prepare security evidence
         run: mkdir -p "docs/${ISSUE_KEY}" artifacts
