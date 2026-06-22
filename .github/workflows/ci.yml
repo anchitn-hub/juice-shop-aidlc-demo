@@ -190,6 +190,7 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           files: frontend-lcov.info server-lcov.info api-lcov.info
   custom-config-test:
+    if: github.repository == 'juice-shop/juice-shop'
     runs-on: ubuntu-latest
     steps:
       - name: "Check out Git repository"
@@ -219,6 +220,7 @@ jobs:
             NODE_ENV=tutorial npm run test:server &&
             NODE_ENV=unsafe npm run test:server
   e2e-test:
+    if: github.repository == 'juice-shop/juice-shop'
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:

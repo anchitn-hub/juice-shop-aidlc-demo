@@ -55,6 +55,8 @@ No workflow merges PRs. The PR review workflow posts evidence only. Jira moves t
 
 ## Bootstrap Checklist
 
+Strict UI rule: use only the Chrome profile named `theaicompany.org`, logged in as `anchitn@theaicompany.org`, for Jira, GitHub, ChatGPT/Codex, and Vercel demo UI work.
+
 1. Create or fork the Juice Shop demo repository in the customer/demo GitHub org.
 2. Push this pipeline scaffold to the repository.
 3. Ensure the repository has a `main` branch.
