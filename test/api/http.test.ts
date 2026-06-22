@@ -53,4 +53,26 @@ void describe('HTTP', () => {
     assert.equal(res.status, 500)
     assert.ok(res.text.includes('<title>Error: Unexpected path: /rest/x</title>'))
   })
+
+  void it('proxy reuse verification endpoint returns success', async () => {
+    const res = await request(app).get('/rest/proxy-reuse-verification')
+
+    assert.equal(res.status, 200)
+    assert.equal(res.body.status, 'success')
+    assert.equal(res.body.data.proxyReuseVerified, true)
+  })
+
+  void it('proxy reuse verification endpoint reports forwarded request details', async () => {
+    const res = await request(app)
+      .get('/rest/proxy-reuse-verification')
+      .set('X-Forwarded-Proto', 'https')
+      .set('X-Forwarded-Host', 'juice.example.test')
+      .set('X-Forwarded-For', '203.0.113.42')
+
+    assert.equal(res.status, 200)
+    assert.equal(res.body.data.protocol, 'https')
+    assert.equal(res.body.data.hostname, 'juice.example.test')
+    assert.equal(res.body.data.ip, '203.0.113.42')
+    assert.equal(res.body.data.forwardedHost, 'juice.example.test')
+  })
 })

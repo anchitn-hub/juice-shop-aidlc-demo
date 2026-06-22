@@ -663,6 +663,18 @@ function configureApp (app: ReturnType<typeof express>, seq: typeof sequelize) {
   app.get('/rest/image-captcha', utils.asyncHandler(imageCaptchas()))
   app.get('/rest/track-order/:id', trackOrder())
   app.get('/rest/country-mapping', utils.asyncHandler(countryMapping()))
+  app.get('/rest/proxy-reuse-verification', (req: Request, res: Response) => {
+    res.status(200).json({
+      status: 'success',
+      data: {
+        proxyReuseVerified: true,
+        protocol: req.protocol,
+        hostname: req.hostname,
+        ip: req.ip,
+        forwardedHost: req.get('x-forwarded-host') ?? null
+      }
+    })
+  })
   app.get('/rest/saveLoginIp', utils.asyncHandler(saveLoginIp()))
   app.post('/rest/user/data-export', security.appendUserId(), utils.asyncHandler(verifyImageCaptcha()))
   app.post('/rest/user/data-export', security.appendUserId(), utils.asyncHandler(dataExport()))
