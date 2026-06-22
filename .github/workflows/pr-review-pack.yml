@@ -32,7 +32,7 @@ jobs:
         with:
           node-version: 24
 
-      - run: npm ci
+      - run: npm install
 
       - name: Run review checks
         run: |
