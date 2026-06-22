@@ -78,6 +78,7 @@ jobs:
           openai-api-key: ${{ secrets.OPENAI_API_KEY }}
           prompt-file: .github/codex/prompts/security-pre-pr.md
           safety-strategy: read-only
+          codex-home: /home/runner/.codex-security
 
       - name: Write security evidence
         env:
