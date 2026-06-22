@@ -207,7 +207,7 @@ void describe('/rest/chat', { timeout: 120000 }, () => {
         assert.equal(toolMsg.tool_call_id, 'call_abc')
         assert.ok(toolMsg.content.includes('Apple Juice'))
         sendSSE(res, [
-          contentChunk('We have Apple Juice (1000ml) for $1.99!'),
+          contentChunk('We have Apple Juice (1000ml) for $2.99!'),
           finishChunk()
         ])
       }
