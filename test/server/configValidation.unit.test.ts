@@ -5,6 +5,7 @@
 
 import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
+import config from 'config'
 import validateConfig, {
   checkUnambiguousMandatorySpecialProducts,
   checkUniqueSpecialOnProducts,
@@ -21,6 +22,14 @@ import type { Memory, Product } from '@juice-shop/lib/config.schema'
 
 void describe('configValidation', () => {
   const COMMON_PRODUCT = { price: 1, description: 'foo', image: 'bar.jpg' }
+
+  void describe('default product catalog', () => {
+    void it('sets Apple Juice 1000ml price to 2.99', () => {
+      const product = config.get<Product[]>('products').find(({ name }) => name === 'Apple Juice (1000ml)')
+
+      assert.equal(product?.price, 2.99)
+    })
+  })
 
   void describe('checkUnambiguousMandatorySpecialProducts', () => {
     void it('should accept a valid config', () => {
