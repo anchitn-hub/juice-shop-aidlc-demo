@@ -8,7 +8,7 @@ type VercelRequest = {
 let appPromise: Promise<Express> | undefined
 
 async function getApp () {
-  appPromise ??= import('../server').then(async ({ createApp }) => {
+  appPromise ??= import('../build/server.js').then(async ({ createApp }) => {
     const { app } = await createApp({ inMemoryDb: true })
     return app
   })
