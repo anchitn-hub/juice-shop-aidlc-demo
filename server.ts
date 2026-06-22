@@ -375,10 +375,11 @@ function configureApp (app: ReturnType<typeof express>, seq: typeof sequelize) {
   })
 
   /* HTTP request logging */
+  const accessLogDirectory = process.env.VERCEL === '1' ? '/tmp/logs' : 'logs'
   const accessLogStream = getStream({
-    filename: path.resolve('logs/access.log.%DATE%'),
+    filename: path.resolve(accessLogDirectory, 'access.log.%DATE%'),
     date_format: 'YYYY-MM-DD',
-    audit_file: 'logs/audit.json',
+    audit_file: path.resolve(accessLogDirectory, 'audit.json'),
     frequency: 'daily',
     verbose: false,
     max_logs: '2d'
