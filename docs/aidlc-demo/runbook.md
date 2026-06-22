@@ -1,8 +1,8 @@
-# AIDLC Juice Shop Demo Runbook
+# AIDLC Juice Shop Golden Pipeline Runbook
 
 ## Goal
 
-Show an AI-assisted delivery lifecycle where Codex turns a request into a Jira story, accepts it, implements against Juice Shop, runs security review and CI gates, opens a PR, and waits for human merge approval.
+Show the golden AI-assisted delivery lifecycle where Codex turns a request into a Jira story, accepts it, implements against Juice Shop, runs security review and CI gates, opens a PR, waits for human approval, deploys from `main`, and updates Jira through every stage.
 
 ## Demo Flow
 
@@ -57,7 +57,7 @@ No workflow merges PRs. The PR review workflow posts evidence only. Jira moves t
 1. Create or fork the Juice Shop demo repository in the customer/demo GitHub org.
 2. Push this pipeline scaffold to the repository.
 3. Ensure the repository has a `main` branch.
-4. Prefer setting `main` as the demo repository default branch so `workflow_dispatch` actions are visible from the same branch that PRs target.
+4. Set `main` as the repository default branch. This is required for the golden pipeline; `develop` must not remain the demo default.
 5. Add the required GitHub Actions secrets.
 6. Add optional Jenkins secrets if the demo should call a live Jenkins job.
 7. Configure Jira/Rovo automation to call `Jira To Codex PR`, or use `AIDLC Request To Jira` when Codex should create the Jira ticket first.
