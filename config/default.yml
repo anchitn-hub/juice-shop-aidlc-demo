@@ -137,7 +137,7 @@ products:
   -
     name: 'Banana Juice (1000ml)'
     description: 'Monkeys love it the most.'
-    price: 1.49
+    price: 2.49
     image: banana_juice.jpg
     reviews:
       - { text: 'Fry liked it too.', author: bender }
