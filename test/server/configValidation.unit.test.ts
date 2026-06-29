@@ -35,6 +35,12 @@ void describe('configValidation', () => {
 
       assert.equal(product?.price, 2.49)
     })
+
+    void it('sets Berry Juice 1000ml price to 1.05', () => {
+      const product = config.get<Product[]>('products').find(({ name }) => name === 'Berry Juice (1000ml)')
+
+      assert.equal(product?.price, 1.05)
+    })
   })
 
   void describe('checkUnambiguousMandatorySpecialProducts', () => {

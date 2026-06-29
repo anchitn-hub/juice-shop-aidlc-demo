@@ -447,7 +447,7 @@ products:
   -
     name: 'Berry Juice (1000ml)'
     description: 'A delicious blend of fresh forest berries.'
-    price: 3.49
+    price: 1.05
     image: berry_juice.png
   -
     name: 'Basil Smoothie'
