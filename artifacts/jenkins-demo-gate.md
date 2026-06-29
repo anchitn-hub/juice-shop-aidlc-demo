@@ -1,6 +1,6 @@
 # Jenkins Demo Gate
 
-Issue: AIDLC-17
+Issue: AIDLC-18
 
 Mode: simulated
 
