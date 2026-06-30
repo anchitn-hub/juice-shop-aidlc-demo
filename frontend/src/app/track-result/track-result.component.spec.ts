@@ -142,13 +142,13 @@ describe('TrackResultComponent', () => {
         })
 
         it('should render a row per ordered product with name, price, quantity and total', () => {
-            renderWith({ products: [{ name: 'Apple Juice', price: 1.99, quantity: 2, total: 3.98 }] })
+            renderWith({ products: [{ name: 'Apple Juice', price: 2.99, quantity: 2, total: 5.98 }] })
             const compiled: HTMLElement = fixture.nativeElement
             expect(compiled.querySelectorAll('mat-row').length).toBe(1)
             expect(compiled.querySelector('.product-name')?.textContent).toContain('Apple Juice')
-            expect(compiled.querySelector('.product-price')?.textContent).toContain('1.99')
+            expect(compiled.querySelector('.product-price')?.textContent).toContain('2.99')
             expect(compiled.querySelector('.product-quantity')?.textContent).toContain('2')
-            expect(compiled.querySelector('.product-total')?.textContent).toContain('3.98')
+            expect(compiled.querySelector('.product-total')?.textContent).toContain('5.98')
         })
 
         it('should render the bonus points hint in the dedicated container', () => {

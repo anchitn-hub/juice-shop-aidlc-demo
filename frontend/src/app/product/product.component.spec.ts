@@ -31,7 +31,7 @@ describe('ProductComponent', () => {
         name: 'Apple Juice',
         description: 'test product',
         image: 'apple_juice.jpg',
-        price: 1.99,
+        price: 2.99,
         deluxePrice: 1.99,
         quantity: 5
     }
@@ -295,7 +295,7 @@ describe('ProductComponent', () => {
 
         it('should render the price and call addToBasket when the basket button is clicked', () => {
             const compiled: HTMLElement = fixture.nativeElement
-            expect(compiled.querySelector('.price')?.textContent).toContain('1.99')
+            expect(compiled.querySelector('.price')?.textContent).toContain('2.99')
             const spy = vi.spyOn(component, 'addToBasket').mockImplementation(() => { })
             const button = compiled.querySelector('button.btn-basket') as HTMLButtonElement
             button.click()

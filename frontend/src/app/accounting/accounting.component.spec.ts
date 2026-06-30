@@ -346,7 +346,7 @@ describe('AccountingComponent', () => {
         it('should render a row per product with price and quantity inputs that invoke modify handlers on click', () => {
             const f = renderWithData(
                 [],
-                [{ id: 7, name: 'Apple Juice', price: 1.99 }],
+                [{ id: 7, name: 'Apple Juice', price: 2.99 }],
                 [{ id: 99, ProductId: 7, quantity: 42 }]
             )
             const comp = f.componentInstance
@@ -355,7 +355,7 @@ describe('AccountingComponent', () => {
 
             const inputs = f.nativeElement.querySelectorAll('.inventory-table input[matInput]') as NodeListOf<HTMLInputElement>
             expect(inputs.length).toBe(2)
-            expect(inputs[0].value).toBe('1.99')
+            expect(inputs[0].value).toBe('2.99')
             expect(inputs[1].value).toBe('42')
 
             const buttons = f.nativeElement.querySelectorAll('.inventory-table button[mat-icon-button]') as NodeListOf<HTMLButtonElement>
@@ -363,7 +363,7 @@ describe('AccountingComponent', () => {
             buttons[0].click()
             buttons[1].click()
 
-            expect(priceSpy).toHaveBeenCalledWith(7, '1.99')
+            expect(priceSpy).toHaveBeenCalledWith(7, '2.99')
             expect(quantitySpy).toHaveBeenCalledWith(99, '42')
         })
 
