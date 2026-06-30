@@ -182,11 +182,11 @@ describe('ProductDetailsComponent', () => {
 
     describe('template rendering', () => {
         it('should render the product name and price from the dialog data', () => {
-            component.data = { productData: { id: 1, name: 'Apple Juice', description: 'Tasty', price: 1.99, image: 'apple.jpg' } as Product }
+            component.data = { productData: { id: 1, name: 'Apple Juice', description: 'Tasty', price: 2.99, image: 'apple.jpg' } as Product }
             fixture.detectChanges()
             const compiled: HTMLElement = fixture.nativeElement
             expect(compiled.querySelector('h1')?.textContent).toContain('Apple Juice')
-            expect(compiled.querySelector('.item-price')?.textContent).toContain('1.99')
+            expect(compiled.querySelector('.item-price')?.textContent).toContain('2.99')
         })
 
         it('should render the bonus-points badge only when productData.points is greater than zero', () => {

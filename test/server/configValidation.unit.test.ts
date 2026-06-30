@@ -24,10 +24,10 @@ void describe('configValidation', () => {
   const COMMON_PRODUCT = { price: 1, description: 'foo', image: 'bar.jpg' }
 
   void describe('default product catalog', () => {
-    void it('sets Apple Juice 1000ml price to 1.99', () => {
+    void it('sets Apple Juice 1000ml price to 2.99', () => {
       const product = config.get<Product[]>('products').find(({ name }) => name === 'Apple Juice (1000ml)')
 
-      assert.equal(product?.price, 1.99)
+      assert.equal(product?.price, 2.99)
     })
 
     void it('sets Banana Juice 1000ml price to 2.49', () => {
